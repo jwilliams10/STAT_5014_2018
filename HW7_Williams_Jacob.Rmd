@@ -1,0 +1,32 @@
+---
+title: "HW 7"
+author: "Jacob Williams"
+date: "October 7, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,warning=F,message=F}
+library(readxl)
+library(ggplot2)
+HW4_data_1 <- read_excel("04_projecting_knowledge_plots/HW4_data.xlsx",sheet = 1)
+HW4_data_2 <- read_excel("04_projecting_knowledge_plots/HW4_data.xlsx",sheet = 2)
+HW4_data_1$day <- rep(1,nrow(HW4_data_1))
+HW4_data_2$day <- rep(2,nrow(HW4_data_2))
+HW4_data <- rbind(HW4_data_1,HW4_data_2)
+
+ggplot(HW4_data,aes(depth,phosphate))+geom_point()+facet_wrap(~block)
+```
+
+
+```{r}
+#library(gganimate)
+#ggplot(HW4_data,aes(depth,phosphate))+geom_point()+facet_wrap(~block)+  transition_states(block,3,1)
+```
+
+Knitting to pdf caused multiple pages so commetted the code out.

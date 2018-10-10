@@ -1,0 +1,139 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+#Problem 2
+```{r}
+set.seed(12345)
+y <- seq(from=1, to=100, length.out = 1e5) + rnorm(1e5)
+```
+
+
+
+
+```{r}
+system.time({
+  ss.2 <- 0
+  for(i in 1:length(y)){
+    ss.2 <- ss + (y[i] - mean(y))^2
+  }
+  
+})
+
+system.time({
+ss.1 <- sum((y - mean(y)^2))  
+})
+```
+
+
+##Problem 3 
+```{r}
+set.seed(1256)
+theta <- as.matrix(c(1,2),nrow=2)
+X <- cbind(1,rep(1:10,10))
+h <- X%*%theta+rnorm(100,0,0.2)
+m <- nrow(h)
+theta.0 <- vector()
+theta.1 <- vector()
+theta.0[1] <- 0
+theta.1[1] <- 0
+theta.0[2] <- 3
+theta.1[2] <- 5
+alpha <- .01
+h.o <- vector()
+i <-2
+tolerance <- .00000000000001
+while (abs(theta.0[i]-theta.0[i-1]) > tolerance & abs(theta.1[i]-theta.1[i-1]) > tolerance) {
+    if(i > 100000){
+      break
+    } else{
+      h.o <- theta.0[i] + theta.1[i]*X[,2]   
+    theta.0[i+1] <- theta.0[i] - alpha*(1/m)*sum(h.o - h)
+    theta.1[i+1] <- theta.1[i] - alpha*(1/m)*sum((h.o - h)*X[,2])
+    }
+  i <- i+1
+  }
+  
+theta.0[length(theta.0)]
+theta.1[length(theta.1)]
+```
+
+```{r}
+lm(h~0+X)
+```
+
+
+The coefficents obtained from the while loop are very similar to the coefficents obtained from the lm function, the tolerance I used is 1e-14 with a step size of .01
+
+#Problem 4
+
+John Cook suggested that we should not solve for the inverse but instead solve $(X^TX)\beta = X^Ty$. This would be done in R using the solve function.
+
+
+#Problem 5
+```{r}
+rm(list=ls())
+set.seed(12456) 
+G <- matrix(sample(c(0,0.5,1),size=16000,replace=T),ncol=10)
+R <- cor(G) # R: 10 * 10 correlation matrix of G
+C <- kronecker(R, diag(1600)) # C is a 16000 * 16000 block diagonal matrix
+id <- sample(1:16000,size=932,replace=F)
+q <- sample(c(0,0.5,1),size=15068,replace=T) # vector of length 15068
+A <- C[id, -id] # matrix of dimension 932 * 15068
+B <- C[-id, -id] # matrix of dimension 15068 * 15068
+p <- runif(932,0,1)
+r <- runif(15068,0,1)
+C<-NULL #save some memory space
+
+object.size(A)
+object.size(B)
+
+
+system.time({
+  y = p + A %*% (solve(B) %*%(q - r))
+})
+
+
+system.time({
+  qr <- q-r
+  B.1 <- solve(B)
+  B.1qr <- (B.1%*%qr)
+  rm(B.1,qr)
+  ABqr <- A%*%B.1qr
+  rm(A)
+  y = p + ABqr
+})
+
+system.time({
+  qr <- q-r
+  B.1 <- solve(B)
+  AB <- crossprod(A,B)
+  ABQR <- crossprod(AB,qr)
+  y = p + ABQR
+})
+
+
+
+system.time({
+  t(solve(B %*% solve((q-r)%*%t(q-r))%*%(q-r),A)+t(p))
+})
+```
+##Problem 5 Part A
+The A matrix is 112347208 Mb and the B matrix 1816357192 bytes.
+
+##Problem 5 Part B
+I tried solving the equation to get:
+
+$B[(q-r)(q-r)^T]^{-1}(q-r)(y^T-p^T) = A$
+
+and then using the solve function one could obtain:
+
+$y = solve(B[(q-r)(q-r)^T]^{-1}(q-r),A)+p^T = A$
+
+I thought in theory this might be easier to solve but I had no luck.
+
+
+
