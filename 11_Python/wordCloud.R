@@ -1,0 +1,7 @@
+text <- readLines("constitution.txt")
+library(dplyr)
+library(tidytext)
+library(wordcloud)
+text_df <- data_frame(text = text)
+text_df <- text_df %>% unnest_tokens(word,text)
+text_df %>% anti_join(stop_words) %>% count(word) %>% with(wordcloud(word, scale=c(3,0.5),n,max.words = 60))
